@@ -1,0 +1,20 @@
+{
+  "name": "markdown-jsx",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "elecdeer",
+  "license": "MIT",
+  "packageManager": "pnpm@9.0.4+sha256.caa915eaae9d9aefccf50ee8aeda25a2f8684d8f9d5c6e367eaf176d97c1f89e",
+  "devDependencies": {
+    "@biomejs/biome": "^1.7.2",
+    "@tsconfig/node20": "^20.1.4",
+    "tsconfig": "^7.0.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}
