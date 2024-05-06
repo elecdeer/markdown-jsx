@@ -1,5 +1,5 @@
 import { AnyObject, ChildElement, FC } from "./jsx";
-import { type JSX, jsx, jsxs } from "./jsx-runtime";
+import { type JSX, jsx } from "./jsx-runtime";
 
 export type { JSX };
 

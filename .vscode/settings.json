@@ -1,4 +1,7 @@
 {
 	"editor.defaultFormatter": "biomejs.biome",
-	"cSpell.words": ["jsxmarkdown"]
+	"cSpell.words": [
+		"jsxmarkdown",
+		"mdast"
+	]
 }

@@ -2,6 +2,7 @@
   "name": "markdown-jsx",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,8 +14,14 @@
   "devDependencies": {
     "@biomejs/biome": "^1.7.2",
     "@tsconfig/node20": "^20.1.4",
+    "@types/mdast": "^4.0.3",
+    "mdast-util-from-markdown": "^2.0.0",
     "tsconfig": "^7.0.0",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "mdast-util-gfm-strikethrough": "^2.0.0",
+    "mdast-util-to-markdown": "^2.1.0"
   }
 }
