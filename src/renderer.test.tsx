@@ -179,14 +179,27 @@ describe("renderer", () => {
         <markdown>
           <ul>
             <li>item1</li>
-            <li>item2</li>
+            <li>
+              item2
+              <ul>
+                <li>
+                  item2-1
+                  <ul>
+                    <li>item2-1-1</li>
+                    <li>item2-1-2</li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
           </ul>
         </markdown>
       )
     ).toMatchInlineSnapshot(`
       "* item1
-
       * item2
+        * item3-1
+          * item3-2-1
+          * item3-2-2
       "
     `);
   });
@@ -199,13 +212,30 @@ describe("renderer", () => {
           <ol>
             <li>item1</li>
             <li>item2</li>
+            <li>
+              item3
+              <ol>
+                <li>item3-1</li>
+                <li>
+                  item3-2
+                  <ol start={6}>
+                    <li>item3-2-6</li>
+                    <li>item3-2-7</li>
+                  </ol>
+                </li>
+              </ol>
+            </li>
           </ol>
         </markdown>
       )
     ).toMatchInlineSnapshot(`
       "1. item1
-
       2. item2
+      3. item3
+         1. item3-1
+         2. item3-2
+            6. item3-2-6
+            7. item3-2-7
       "
     `);
   });

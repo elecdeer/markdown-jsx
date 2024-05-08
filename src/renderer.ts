@@ -13,7 +13,7 @@ export const createRenderer = (config: unknown) => {
 
     const mdast = renderToMdast(element);
 
-    console.log(mdast);
+    console.dir(mdast, { depth: null });
 
     return toMarkdown(mdast, {
       extensions: [gfmStrikethroughToMarkdown()],
@@ -93,15 +93,16 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
   if (typeof type === "function") {
     return transformNode(renderedNode, allowedNodeType);
   }
+
+  if (!(allowedNodeType as string[]).includes(type)) {
+    throw new MdastSemanticError(`Invalid node type: ${type}`);
+  }
+
   if (type === "$text") {
     return {
       type: "text",
       value: props.value,
     } satisfies mdast.Text as ElementTypeToMdastNodeMap[T];
-  }
-
-  if (!(allowedNodeType as string[]).includes(type)) {
-    throw new MdastSemanticError(`Invalid node type: ${type}`);
   }
 
   switch (type) {
@@ -202,6 +203,7 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
       return {
         type: "list",
         ordered: false,
+        spread: false,
         children: props.children
           .map((child) => transformNode(child, ["li"]))
           .filter(excludeNullish),
@@ -210,6 +212,7 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
       return {
         type: "list",
         ordered: true,
+        spread: false,
         start: (props as IntrinsicElementNode<"ol">["$$jsxmarkdown"]["props"])
           .start,
         children: props.children
@@ -219,8 +222,21 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
     case "li":
       return {
         type: "listItem",
+        spread: false,
         children: props.children
-          .map((child) => transformNode(child, blockContentTypes))
+          .map((child) => {
+            const childNode = transformNode(child, [
+              ...blockContentTypes,
+              "$text",
+            ]);
+            if (childNode?.type === "text") {
+              return {
+                type: "paragraph",
+                children: [childNode],
+              } satisfies mdast.Paragraph;
+            }
+            return childNode;
+          })
           .filter(excludeNullish),
       } satisfies mdast.ListItem as ElementTypeToMdastNodeMap[T];
 

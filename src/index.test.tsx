@@ -24,6 +24,10 @@ Pre
 * Unordered list
 * Unordered list2
 * Unordered list3
+  * 3-1
+  * 3-2
+    * 3-3-1
+    * 3-3-2
 
 1. Ordered list
 2. Ordered list2
@@ -55,7 +59,7 @@ test("markdown to mdast", () => {
           transforms: [removePosition],
         },
       ],
-    })
+    }).toString()
   ).toMatchInlineSnapshot(`
     {
       "children": [
@@ -196,6 +200,118 @@ test("markdown to mdast", () => {
               "spread": false,
               "type": "listItem",
             },
+            {
+              "checked": null,
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Unordered list2",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "spread": false,
+              "type": "listItem",
+            },
+            {
+              "checked": null,
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Unordered list3",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+                {
+                  "children": [
+                    {
+                      "checked": null,
+                      "children": [
+                        {
+                          "children": [
+                            {
+                              "type": "text",
+                              "value": "3-1",
+                            },
+                          ],
+                          "type": "paragraph",
+                        },
+                      ],
+                      "spread": false,
+                      "type": "listItem",
+                    },
+                    {
+                      "checked": null,
+                      "children": [
+                        {
+                          "children": [
+                            {
+                              "type": "text",
+                              "value": "3-2",
+                            },
+                          ],
+                          "type": "paragraph",
+                        },
+                        {
+                          "children": [
+                            {
+                              "checked": null,
+                              "children": [
+                                {
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "value": "3-3-1",
+                                    },
+                                  ],
+                                  "type": "paragraph",
+                                },
+                              ],
+                              "spread": false,
+                              "type": "listItem",
+                            },
+                            {
+                              "checked": null,
+                              "children": [
+                                {
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "value": "3-3-2",
+                                    },
+                                  ],
+                                  "type": "paragraph",
+                                },
+                              ],
+                              "spread": false,
+                              "type": "listItem",
+                            },
+                          ],
+                          "ordered": false,
+                          "spread": false,
+                          "start": null,
+                          "type": "list",
+                        },
+                      ],
+                      "spread": false,
+                      "type": "listItem",
+                    },
+                  ],
+                  "ordered": false,
+                  "spread": false,
+                  "start": null,
+                  "type": "list",
+                },
+              ],
+              "spread": false,
+              "type": "listItem",
+            },
           ],
           "ordered": false,
           "spread": false,
@@ -212,6 +328,38 @@ test("markdown to mdast", () => {
                     {
                       "type": "text",
                       "value": "Ordered list",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "spread": false,
+              "type": "listItem",
+            },
+            {
+              "checked": null,
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Ordered list2",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "spread": false,
+              "type": "listItem",
+            },
+            {
+              "checked": null,
+              "children": [
+                {
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "Ordered list3",
                     },
                   ],
                   "type": "paragraph",
