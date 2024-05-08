@@ -6,8 +6,12 @@ export namespace JSX {
   export interface IntrinsicElements
     extends MarkdownJSX.JSX.IntrinsicElements {}
 
-  export interface ElementAttributesProperty
+  export interface ElementChildrenAttribute
     extends MarkdownJSX.JSX.ElementChildrenAttribute {}
+
+  export interface ElementAttributesProperty {
+    props: any;
+  }
 }
 
 export { jsx, jsxs };

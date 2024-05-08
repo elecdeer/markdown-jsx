@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { createRenderer, renderToMdast } from "./renderer";
+import { ChildElement, FC } from "./jsx";
+import { JSX } from "./jsx-runtime";
 
 const testElement = (
   <markdown>
@@ -111,11 +113,18 @@ describe("renderer", () => {
     expect(
       render(
         <markdown>
-          Call <code>{"render()"}</code>
+          <p>
+            Call <code>{"render()"}</code>
+          </p>
+          <p>
+            Call <code>{"render(`option-${i}`)"}</code>
+          </p>
         </markdown>
       )
     ).toMatchInlineSnapshot(`
       "Call \`render()\`
+
+      Call \`\`render(\`option-\${i}\`)\`\`
       "
     `);
   });
@@ -194,6 +203,43 @@ describe("renderer", () => {
       "> para
       >
       > parapara
+      "
+    `);
+  });
+
+  test("FC", () => {
+    const Component: FC<{
+      children: ChildElement;
+    }> = ({ children }) => {
+      return (
+        <p>
+          <b>
+            <i>{children}</i>
+          </b>
+        </p>
+      );
+    };
+
+    const render = createRenderer({});
+    expect(
+      render(
+        <markdown>
+          <Component>
+            <i>Component</i>
+          </Component>
+          <Component>Component</Component>
+          <Component>Component2</Component>
+          <Component>Component3</Component>
+        </markdown>
+      )
+    ).toMatchInlineSnapshot(`
+      "****Component****
+
+      ***Component***
+
+      ***Component2***
+
+      ***Component3***
       "
     `);
   });

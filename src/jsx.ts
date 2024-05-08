@@ -13,7 +13,7 @@ export namespace MarkdownJSX {
       h3: AnyObject;
 
       p: AnyObject;
-      a: { href: string };
+      a: { href: string; children?: ChildElements };
 
       i: AnyObject;
       b: AnyObject;
@@ -61,14 +61,14 @@ export namespace MarkdownJSX {
     }
 
     export interface ElementChildrenAttribute {
-      children: AnyObject;
+      children?: any;
     }
   }
 }
 
 export type Node<P extends Record<string | number | symbol, unknown> = {}> =
   | FunctionComponentNode<P>
-  | IntrinsicElementNode<P>
+  | IntrinsicElementNode
   | TextElementNode;
 
 export type FunctionComponentNode<
@@ -83,11 +83,11 @@ export type FunctionComponentNode<
 };
 
 export type IntrinsicElementNode<
-  P extends Record<string | number | symbol, unknown> = {}
+  T extends keyof MarkdownJSX.JSX.IntrinsicElements = keyof MarkdownJSX.JSX.IntrinsicElements
 > = {
   readonly $$jsxmarkdown: {
-    type: keyof MarkdownJSX.JSX.IntrinsicElements;
-    props: P & {
+    type: T;
+    props: MarkdownJSX.JSX.IntrinsicElements[T] & {
       children: Node[];
     };
   };
@@ -112,7 +112,7 @@ export type StringLike = {
 export type ChildElements = ChildElement | ChildElement[];
 
 // biome-ignore lint/complexity/noBannedTypes: <explanation>
-export type FC<P extends {} = {}> = (props: P) => Node<P> | null;
+export type FC<P extends {} = {}> = (props: P) => MarkdownJSX.JSX.Element;
 
 export const jsx = (
   type: FC | keyof MarkdownJSX.JSX.IntrinsicElements,
@@ -121,6 +121,19 @@ export const jsx = (
   },
   _key: unknown
 ): Node => {
+  // 必ず配列に変換
+  const children = props.children
+    ? Array.isArray(props.children)
+      ? props.children.map((child) => {
+          return typeof child === "object" ? child : createTextElement(child);
+        })
+      : [
+          typeof props.children === "object"
+            ? props.children
+            : createTextElement(props.children),
+        ]
+    : [];
+
   // 組み込み要素
   if (typeof type === "string") {
     return {
@@ -128,26 +141,22 @@ export const jsx = (
         type,
         props: {
           ...props,
-          // 必ず配列に変換
-          children: props.children
-            ? Array.isArray(props.children)
-              ? props.children.map((child) => {
-                  return typeof child === "object"
-                    ? child
-                    : createTextElement(child);
-                })
-              : [
-                  typeof props.children === "object"
-                    ? props.children
-                    : createTextElement(props.children),
-                ]
-            : [],
+          children,
         },
       },
     };
   }
 
-  throw new Error("Not implemented");
+  // 関数コンポーネント
+  return {
+    $$jsxmarkdown: {
+      type,
+      props: {
+        ...props,
+        children,
+      },
+    },
+  };
 };
 
 const createTextElement = (children: StringLike): TextElementNode => {
