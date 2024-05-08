@@ -13,6 +13,7 @@ export namespace MarkdownJSX {
       h3: AnyObject;
 
       p: AnyObject;
+      br: { children?: never };
       a: { href: string; children?: ChildElements };
 
       i: AnyObject;

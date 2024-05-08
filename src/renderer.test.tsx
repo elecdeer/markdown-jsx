@@ -66,6 +66,28 @@ describe("renderer", () => {
     `);
   });
 
+  test("break", () => {
+    const render = createRenderer({});
+    expect(
+      render(
+        <markdown>
+          <p>
+            aaa
+            <br />
+            bbb
+            <br />
+            ccc
+          </p>
+        </markdown>
+      )
+    ).toMatchInlineSnapshot(`
+      "aaa\\
+      bbb\\
+      ccc
+      "
+    `);
+  });
+
   test("link", () => {
     const render = createRenderer({});
     expect(

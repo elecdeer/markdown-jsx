@@ -38,7 +38,7 @@ const excludeNullish = <T>(value: T): value is Exclude<T, null | undefined> =>
 
 const rootContentTypes = [
   "blockquote", // blockquote
-  // "br", // break
+  "br", // break
   "pre", // code
   "s", // delete
   "i", // emphasis
@@ -55,7 +55,7 @@ const rootContentTypes = [
 ] as const satisfies ElementType[];
 
 const phrasingContentTypes = [
-  // "br", // break
+  "br", // break
   "s", // delete
   "i", // emphasis
   "code", // inlineCode
@@ -143,6 +143,10 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
           .map((child) => transformNode(child, phrasingContentTypes))
           .filter(excludeNullish),
       } satisfies mdast.Paragraph as ElementTypeToMdastNodeMap[T];
+    case "br":
+      return {
+        type: "break",
+      } satisfies mdast.Break as ElementTypeToMdastNodeMap[T];
     case "a":
       return {
         type: "link",
@@ -252,6 +256,7 @@ export type ElementTypeToMdastNodeMap = {
   h2: mdast.Heading;
   h3: mdast.Heading;
   p: mdast.Paragraph;
+  br: mdast.Break;
   a: mdast.Link;
   i: mdast.Emphasis;
   b: mdast.Strong;
