@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { createRenderer, renderToMdast } from "./renderer";
-import { ChildElement, FC } from "./jsx";
-import { JSX } from "./jsx-runtime";
+import type { ChildElement, FC } from "./jsx";
 
 const testElement = (
   <markdown>
@@ -197,9 +196,9 @@ describe("renderer", () => {
     ).toMatchInlineSnapshot(`
       "* item1
       * item2
-        * item3-1
-          * item3-2-1
-          * item3-2-2
+        * item2-1
+          * item2-1-1
+          * item2-1-2
       "
     `);
   });
@@ -292,6 +291,27 @@ describe("renderer", () => {
       ***Component2***
 
       ***Component3***
+      "
+    `);
+  });
+
+  test("Fragment", () => {
+    const render = createRenderer({});
+    expect(
+      render(
+        <markdown>
+          <>
+            <p>
+              <>para1</>
+            </p>
+            <p>para2</p>
+          </>
+        </markdown>
+      )
+    ).toMatchInlineSnapshot(`
+      "para1
+
+      para2
       "
     `);
   });

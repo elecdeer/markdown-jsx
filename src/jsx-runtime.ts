@@ -1,4 +1,4 @@
-import { type MarkdownJSX, jsx, jsxs } from "./jsx";
+import { type MarkdownJSX, jsx, jsxs, Fragment } from "./jsx";
 
 export namespace JSX {
   export type Element = MarkdownJSX.JSX.Element;
@@ -14,4 +14,4 @@ export namespace JSX {
   }
 }
 
-export { jsx, jsxs };
+export { jsx, jsxs, Fragment };

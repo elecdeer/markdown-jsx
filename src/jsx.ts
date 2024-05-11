@@ -70,7 +70,8 @@ export namespace MarkdownJSX {
 export type Node<P extends Record<string | number | symbol, unknown> = {}> =
   | FunctionComponentNode<P>
   | IntrinsicElementNode
-  | TextElementNode;
+  | TextElementNode
+  | FragmentElementNode;
 
 export type FunctionComponentNode<
   P extends Record<string | number | symbol, unknown> = {}
@@ -100,6 +101,15 @@ export type TextElementNode = {
     props: {
       value: string;
       children: never[];
+    };
+  };
+};
+
+export type FragmentElementNode = {
+  readonly $$jsxmarkdown: {
+    type: "$fragment";
+    props: {
+      children: Node[];
     };
   };
 };
@@ -167,6 +177,23 @@ const createTextElement = (children: StringLike): TextElementNode => {
       props: {
         value: children.toString(),
         children: [],
+      },
+    },
+  };
+};
+
+export const Fragment = (props: { children: ChildElements }): Node => {
+  const children = Array.isArray(props.children)
+    ? props.children
+    : [props.children];
+
+  return {
+    $$jsxmarkdown: {
+      type: "$fragment",
+      props: {
+        children: children.map((child) => {
+          return typeof child === "object" ? child : createTextElement(child);
+        }),
       },
     },
   };
