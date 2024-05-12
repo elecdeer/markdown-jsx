@@ -8,10 +8,10 @@ import { type IntrinsicElementNode, type Node, TextElementNode } from "./jsx";
 export type Renderer = (component: unknown) => string;
 
 export const createRenderer = (config: unknown) => {
-  return (element: JSX.Element) => {
+  return async (element: JSX.Element) => {
     console.dir(element, { depth: null });
 
-    const mdast = renderToMdast(element);
+    const mdast = await renderToMdast(element);
 
     console.dir(mdast, { depth: null });
 
@@ -21,12 +21,16 @@ export const createRenderer = (config: unknown) => {
   };
 };
 
-export const renderToMdast = (element: JSX.Element): mdast.Root => {
-  const { type } = element.$$jsxmarkdown;
+export const renderToMdast = async (
+  element: JSX.Element
+): Promise<mdast.Root> => {
+  const resolvedElement = await element;
+
+  const { type } = resolvedElement.$$jsxmarkdown;
   if (typeof type === "string") {
-    const rootNode = transformNode(element, ["markdown"]).filter(
-      excludeNullish
-    );
+    const rootNode = (
+      await transformNode(resolvedElement, ["markdown"])
+    ).filter(excludeNullish);
     if (rootNode[0]) {
       return rootNode[0];
     }
@@ -77,21 +81,19 @@ const blockContentTypes = [
   "p", // paragraph
 ] as const satisfies ElementType[];
 
-const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
+const transformNode = async <T extends keyof ElementTypeToMdastNodeMap>(
   element: Node,
   allowedNodeType: T[]
-): (ElementTypeToMdastNodeMap[T] | null)[] => {
+): Promise<(ElementTypeToMdastNodeMap[T] | null)[]> => {
   const { type, props } = element.$$jsxmarkdown;
 
   if (typeof type === "function") {
-    const renderedNode = type(props);
+    const renderedNode = await type(props);
     return transformNode(renderedNode, allowedNodeType);
   }
 
   if (type === "$fragment") {
-    return props.children
-      .flatMap((child) => transformNode(child, allowedNodeType))
-      .filter(excludeNullish);
+    return mapChildren(props.children, allowedNodeType);
   }
 
   if (!(allowedNodeType as string[]).includes(type)) {
@@ -112,9 +114,7 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
       return [
         {
           type: "root",
-          children: props.children
-            .flatMap((child) => transformNode(child, rootContentTypes))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, rootContentTypes),
         } satisfies mdast.Root as ElementTypeToMdastNodeMap[T],
       ];
     case "h1":
@@ -122,9 +122,7 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
         {
           type: "heading",
           depth: 1,
-          children: props.children
-            .flatMap((child) => transformNode(child, phrasingContentTypes))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, phrasingContentTypes),
         } satisfies mdast.Heading as ElementTypeToMdastNodeMap[T],
       ];
     case "h2":
@@ -132,9 +130,7 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
         {
           type: "heading",
           depth: 2,
-          children: props.children
-            .flatMap((child) => transformNode(child, phrasingContentTypes))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, phrasingContentTypes),
         } satisfies mdast.Heading as ElementTypeToMdastNodeMap[T],
       ];
     case "h3":
@@ -142,18 +138,14 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
         {
           type: "heading",
           depth: 3,
-          children: props.children
-            .flatMap((child) => transformNode(child, phrasingContentTypes))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, phrasingContentTypes),
         } satisfies mdast.Heading as ElementTypeToMdastNodeMap[T],
       ];
     case "p":
       return [
         {
           type: "paragraph",
-          children: props.children
-            .flatMap((child) => transformNode(child, phrasingContentTypes))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, phrasingContentTypes),
         } satisfies mdast.Paragraph as ElementTypeToMdastNodeMap[T],
       ];
     case "br":
@@ -168,36 +160,28 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
           type: "link",
           url: (props as IntrinsicElementNode<"a">["$$jsxmarkdown"]["props"])
             .href,
-          children: props.children
-            .flatMap((child) => transformNode(child, phrasingContentTypes))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, phrasingContentTypes),
         } satisfies mdast.Link as ElementTypeToMdastNodeMap[T],
       ];
     case "i":
       return [
         {
           type: "emphasis",
-          children: props.children
-            .flatMap((child) => transformNode(child, phrasingContentTypes))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, phrasingContentTypes),
         } satisfies mdast.Emphasis as ElementTypeToMdastNodeMap[T],
       ];
     case "b":
       return [
         {
           type: "strong",
-          children: props.children
-            .flatMap((child) => transformNode(child, phrasingContentTypes))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, phrasingContentTypes),
         } satisfies mdast.Strong as ElementTypeToMdastNodeMap[T],
       ];
     case "s":
       return [
         {
           type: "delete",
-          children: props.children
-            .flatMap((child) => transformNode(child, phrasingContentTypes))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, phrasingContentTypes),
         } satisfies mdast.Delete as ElementTypeToMdastNodeMap[T],
       ];
     // case "u":
@@ -209,9 +193,7 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
       return [
         {
           type: "inlineCode",
-          value: props.children
-            .flatMap((child) => transformNode(child, ["$text"]))
-            .filter(excludeNullish)
+          value: (await mapChildren(props.children, ["$text"]))
             .map((child) => child?.value ?? "")
             .join(""),
         } satisfies mdast.InlineCode as ElementTypeToMdastNodeMap[T],
@@ -222,9 +204,7 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
           type: "code",
           lang: (props as IntrinsicElementNode<"pre">["$$jsxmarkdown"]["props"])
             .lang,
-          value: props.children
-            .flatMap((child) => transformNode(child, ["$text"]))
-            .filter(excludeNullish)
+          value: (await mapChildren(props.children, ["$text"]))
             .map((child) => child?.value ?? "")
             .join(""),
         } satisfies mdast.Code as ElementTypeToMdastNodeMap[T],
@@ -235,9 +215,7 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
           type: "list",
           ordered: false,
           spread: false,
-          children: props.children
-            .flatMap((child) => transformNode(child, ["li"]))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, ["li"]),
         } satisfies mdast.List as ElementTypeToMdastNodeMap[T],
       ];
     case "ol":
@@ -248,9 +226,7 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
           spread: false,
           start: (props as IntrinsicElementNode<"ol">["$$jsxmarkdown"]["props"])
             .start,
-          children: props.children
-            .flatMap((child) => transformNode(child, ["li"]))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, ["li"]),
         } satisfies mdast.List as ElementTypeToMdastNodeMap[T],
       ];
     case "li":
@@ -258,20 +234,17 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
         {
           type: "listItem",
           spread: false,
-          children: props.children
-            .flatMap((child) =>
-              transformNode(child, [...blockContentTypes, "$text"])
-            )
-            .filter(excludeNullish)
-            .map((child) => {
-              if (child?.type === "text") {
-                return {
-                  type: "paragraph",
-                  children: [child],
-                } satisfies mdast.Paragraph;
-              }
-              return child;
-            }),
+          children: (
+            await mapChildren(props.children, [...blockContentTypes, "$text"])
+          ).map((child) => {
+            if (child?.type === "text") {
+              return {
+                type: "paragraph",
+                children: [child],
+              } satisfies mdast.Paragraph;
+            }
+            return child;
+          }),
         } satisfies mdast.ListItem as ElementTypeToMdastNodeMap[T],
       ];
 
@@ -279,15 +252,24 @@ const transformNode = <T extends keyof ElementTypeToMdastNodeMap>(
       return [
         {
           type: "blockquote",
-          children: props.children
-            .flatMap((child) => transformNode(child, blockContentTypes))
-            .filter(excludeNullish),
+          children: await mapChildren(props.children, blockContentTypes),
         } satisfies mdast.Blockquote as ElementTypeToMdastNodeMap[T],
       ];
 
     default:
       throw new Error(`Unknown type: ${type}`);
   }
+};
+
+const mapChildren = async <T extends keyof ElementTypeToMdastNodeMap>(
+  children: Node[],
+  allowedNodeType: T[]
+): Promise<ElementTypeToMdastNodeMap[T][]> => {
+  const renderedChildren = await Promise.all(
+    children.map(async (child) => transformNode(child, allowedNodeType))
+  );
+
+  return renderedChildren.flat().filter(excludeNullish);
 };
 
 // declare namespace mdast {

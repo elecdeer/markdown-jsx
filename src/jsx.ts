@@ -62,19 +62,21 @@ export namespace MarkdownJSX {
     }
 
     export interface ElementChildrenAttribute {
-      children?: any;
+      children?: unknown;
     }
   }
 }
 
-export type Node<P extends Record<string | number | symbol, unknown> = {}> =
+export type Node<
+  P extends Record<string | number | symbol, unknown> = Record<string, unknown>
+> =
   | FunctionComponentNode<P>
   | IntrinsicElementNode
   | TextElementNode
   | FragmentElementNode;
 
 export type FunctionComponentNode<
-  P extends Record<string | number | symbol, unknown> = {}
+  P extends Record<string | number | symbol, unknown> = Record<string, unknown>
 > = {
   readonly $$jsxmarkdown: {
     type: FC<P>;
@@ -123,7 +125,9 @@ export type StringLike = {
 export type ChildElements = ChildElement | ChildElement[];
 
 // biome-ignore lint/complexity/noBannedTypes: <explanation>
-export type FC<P extends {} = {}> = (props: P) => MarkdownJSX.JSX.Element;
+export type FC<P extends {} = {}> = (
+  props: P
+) => MarkdownJSX.JSX.Element | Promise<MarkdownJSX.JSX.Element>;
 
 export const jsx = (
   type: FC | keyof MarkdownJSX.JSX.IntrinsicElements,

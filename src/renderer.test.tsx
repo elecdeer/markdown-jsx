@@ -31,10 +31,10 @@ const testElement = (
 );
 
 describe("renderer", () => {
-  test("heading", () => {
+  test("heading", async () => {
     const render = createRenderer({});
     expect(
-      render(
+      await render(
         <markdown>
           <h1>h1h1h1</h1>
           <h2>h2h2h2</h2>
@@ -51,10 +51,10 @@ describe("renderer", () => {
     `);
   });
 
-  test("paragraph", () => {
+  test("paragraph", async () => {
     const render = createRenderer({});
     expect(
-      render(
+      await render(
         <markdown>
           <p>ppp</p>
         </markdown>
@@ -65,10 +65,10 @@ describe("renderer", () => {
     `);
   });
 
-  test("break", () => {
+  test("break", async () => {
     const render = createRenderer({});
     expect(
-      render(
+      await render(
         <markdown>
           <p>
             aaa
@@ -87,10 +87,10 @@ describe("renderer", () => {
     `);
   });
 
-  test("link", () => {
+  test("link", async () => {
     const render = createRenderer({});
     expect(
-      render(
+      await render(
         <markdown>
           This is <a href="https://example.com">Link</a>
         </markdown>
@@ -101,10 +101,10 @@ describe("renderer", () => {
     `);
   });
 
-  test("Style", () => {
+  test("Style", async () => {
     const render = createRenderer({});
     expect(
-      render(
+      await render(
         <markdown>
           <p>
             <i>Italic</i>
@@ -129,31 +129,31 @@ describe("renderer", () => {
     `);
   });
 
-  test("inlineCode", () => {
+  test("inlineCode", async () => {
     const render = createRenderer({});
     expect(
-      render(
+      await render(
         <markdown>
           <p>
-            Call <code>{"render()"}</code>
+            Call <code>{"await render()"}</code>
           </p>
           <p>
-            Call <code>{"render(`option-${i}`)"}</code>
+            Call <code>{"await render(`option-${i}`)"}</code>
           </p>
         </markdown>
       )
     ).toMatchInlineSnapshot(`
-      "Call \`render()\`
+      "Call \`await render()\`
 
-      Call \`\`render(\`option-\${i}\`)\`\`
+      Call \`\`await render(\`option-\${i}\`)\`\`
       "
     `);
   });
 
-  test("codeBlock", () => {
+  test("codeBlock", async () => {
     const render = createRenderer({});
     expect(
-      render(
+      await render(
         <markdown>
           <pre>{"const a = 1;"}</pre>
           <pre lang={"ts"}>{"const hoge = `${fuga}`;"}</pre>
@@ -171,10 +171,10 @@ describe("renderer", () => {
     `);
   });
 
-  test("unorderedList", () => {
+  test("unorderedList", async () => {
     const render = createRenderer({});
     expect(
-      render(
+      await render(
         <markdown>
           <ul>
             <li>item1</li>
@@ -203,10 +203,10 @@ describe("renderer", () => {
     `);
   });
 
-  test("orderedList", () => {
+  test("orderedList", async () => {
     const render = createRenderer({});
     expect(
-      render(
+      await render(
         <markdown>
           <ol>
             <li>item1</li>
@@ -239,10 +239,10 @@ describe("renderer", () => {
     `);
   });
 
-  test("blockquote", () => {
+  test("blockquote", async () => {
     const render = createRenderer({});
     expect(
-      render(
+      await render(
         <markdown>
           <blockquote>
             <p>para</p>
@@ -258,7 +258,7 @@ describe("renderer", () => {
     `);
   });
 
-  test("FC", () => {
+  test("FC", async () => {
     const Component: FC<{
       children: ChildElement;
     }> = ({ children }) => {
@@ -273,7 +273,7 @@ describe("renderer", () => {
 
     const render = createRenderer({});
     expect(
-      render(
+      await render(
         <markdown>
           <Component>
             <i>Component</i>
@@ -295,14 +295,60 @@ describe("renderer", () => {
     `);
   });
 
-  test("Fragment", () => {
+  test("async FC", async () => {
+    const Component: FC<{
+      children: ChildElement;
+    }> = async ({ children }) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return <>{children}</>;
+    };
+
     const render = createRenderer({});
     expect(
-      render(
+      await render(
+        <markdown>
+          <p>
+            <Component>
+              <i>Async Component</i>
+            </Component>
+          </p>
+
+          <p>
+            <Component>Async Component</Component>
+          </p>
+          <p>
+            <>
+              <Component>Async Component2</Component>
+            </>
+          </p>
+          <p>
+            <Component>
+              <Component>Async Component3</Component>
+            </Component>
+          </p>
+        </markdown>
+      )
+    ).toMatchInlineSnapshot(`
+      "*Async Component*
+
+      Async Component
+
+      Async Component2
+
+      Async Component3
+      "
+    `);
+  });
+
+  test("Fragment", async () => {
+    const render = createRenderer({});
+    expect(
+      await render(
         <markdown>
           <>
             <p>
-              <>para1</>
+              {/* biome-ignore lint/complexity/noUselessFragments: <explanation> */}
+              pa<>ra</>1
             </p>
             <p>para2</p>
           </>
@@ -317,9 +363,9 @@ describe("renderer", () => {
   });
 });
 
-test("test", () => {
+test("test", async () => {
   const render = createRenderer({});
-  expect(render(testElement)).toMatchInlineSnapshot(`
+  expect(await render(testElement)).toMatchInlineSnapshot(`
     "# Hello, world!
 
     This is a test.
